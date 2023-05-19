@@ -15,10 +15,10 @@ class MyApp extends StatelessWidget {
         ),
         home: Scaffold(
           appBar: AppBar(
-            title: const Text("Hello World"),
+            title: const Text("this is new text"),
           ),
           body: const Center(
-            child: Text("Hello World"),
+            child: Text("Hello let this be changed at first"),
           ),
         )
     );
