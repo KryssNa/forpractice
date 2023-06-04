@@ -1,60 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../ViewModel/auth_viewmodel.dart';
 import '../../constant/Colors.dart';
-import '../../model/user_model.dart';
 import '../../widget/buttonWidget.dart';
 import '../../widget/textFieldWidget.dart';
-import 'LoginScreen.dart';
+import 'RegisterScreen.dart';
 
-class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
-  static String routeName = "/RegisterScreen";
-  static bool changePaswordState = false;
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? GlobalKey}) : super(key: GlobalKey);
+  static String routeName = "/LoginScreen";
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  TextEditingController nameController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-  TextEditingController phoneController = TextEditingController();
-  TextEditingController confirmPasswordController = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
   bool _isChecked = true;
   late AuthViewModel _authen;
 
-  showHidePassword() {
-    setState(() {
-      RegisterScreen.changePaswordState  = !RegisterScreen.changePaswordState;
-    });
-  }
-  Widget showVisibilityIcon(bool showPassword) {
-    Widget icon = const Icon(Icons.visibility);
-    if (showPassword == true) {
-      icon = const Icon(Icons.visibility_off);
-    }
-    return showPassword == RegisterScreen.changePaswordState
-        ? InkWell(
-        onTap: () {
-          setState(() {
-            RegisterScreen.changePaswordState = !RegisterScreen.changePaswordState;
-          });
-        },
-        child: icon)
-        : InkWell(
-        onTap: () {
-          setState(() {
-            RegisterScreen.changePaswordState = !RegisterScreen.changePaswordState;
-          });
-        },
-        child: const Icon(Icons.visibility_off));
-  }
-
+  @override
   void showErrorDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -64,7 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             borderRadius: BorderRadius.circular(20),
           ),
           title: const Text("Error"),
-          content: const Text("Failed to register user."),
+          content: const Text("Failed to Login."),
           actions: <Widget>[
             TextButton(
               child: const Text("OK"),
@@ -78,14 +45,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Future<bool> registerUser() async {
-    // Simulating a delay for user registration
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Return whether the registration is successful or not
-    return true;
-  }
-
   @override
   void initState() {
     _authen = Provider.of<AuthViewModel>(context, listen: false);
@@ -93,49 +52,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   bool isLoading = false;
-  void register() async {
-    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      isLoading = true; // Start loading
-    });
-
+  void login() async {
     try {
-      await _authen.register(UserModel(
-        name: nameController.text,
-        email: emailController.text,
-        phone: phoneController.text,
-        password: passwordController.text,
-      )).then((value) {
-        // Registration success
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("User Registered Successfully")));
-        registerUser().then((value) {
-          // Navigate to login screen
-          Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
-        });
+      await _authen.login(emailController.text, passwordController.text).then((value) {
+        if (_authen.loggedInUser!.fcmToken != "ADMIN") {
+          //snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Login Successful"),
+            ),
+          );
+          // Navigator.of(context).pushReplacementNamed('/adminDashboard');
+        } else {
+          // Navigator.of(context).pushReplacementNamed('/userDashboard');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Login Successful"),
+            ),
+          );
+        }
+        // Navigator.of(context).pushReplacementNamed('/userDashboard');
       }).catchError((e) {
-        // Registration error
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.message.toString())));
       });
     } catch (err) {
-      // Error occurred during registration
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(err.toString())));
-    } finally {
-      setState(() {
-        isLoading = false; // Stop loading
-      });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: ConstColors.primaryColor2,
+        backgroundColor: ConstColors.primaryColor2,
         body: SafeArea(
           child: Container(
               decoration: const BoxDecoration(
@@ -157,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             const Text(
-                              'REGISTER',
+                              'lOG IN',
                               style: TextStyle(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
@@ -169,7 +120,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             SizedBox(
                               height: 150,
                               width: 200,
-                              child: Image.asset('Assets/images/register.png'),
+                              child: Image.asset('Assets/images/Login.png'),
                             )
                           ],
                         ),
@@ -187,20 +138,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 margin: const EdgeInsets.all(20),
                                 child: Column(
                                   children: [
-                                    textField(
-                                      titleHeading: 'Name',
-                                      hintText: 'Enter your name',
-                                      controller: nameController,
-                                        Validator: ( value) {
-                                          if (value == null || value.isEmpty ) {
-                                            return "Name cannot be empty";
-                                          }
-                                          return null; // null means passed
-                                        }
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
                                     textField(
                                       titleHeading: 'Email',
                                       hintText: 'Enter your email',
@@ -221,28 +158,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       height: 20,
                                     ),
                                     textField(
-                                      titleHeading: 'Phone Number',
-                                      hintText: 'Enter your phone number',
-                                      controller: phoneController,
-                                      Validator: ( value) {
-                                        if (value == null || value.isEmpty) {
-                                          return "phone number is required";
-                                        }
-                                        if (value.length < 10 || value.length > 10) {
-                                          return "enter valid phone number";
-                                        }
-                                        return null; //
-                                      },
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    textField(
                                       titleHeading: 'Password',
                                       hintText: 'Enter your password',
                                       obscureText: true,
-                                      suffixIcon: showVisibilityIcon(
-                                          RegisterScreen.changePaswordState),
+                                      suffixIcon: Icon(Icons.visibility),
                                       controller: passwordController,
                                       Validator: ( value) {
                                         if (value == null || value.isEmpty) {
@@ -253,24 +172,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         }
                                         return null; //
                                       },
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    textField(
-                                        titleHeading: 'Confirm Password',
-                                        hintText: 'Confirm your password',
-                                        obscureText: false,
-                                        suffixIcon: showVisibilityIcon(
-                                            RegisterScreen.changePaswordState),
-                                        controller: confirmPasswordController,
-                                      Validator: ( value) {
-                                        if (value == null || value != passwordController.text) {
-                                          return "password does not match";
-                                        }
-                                        return null; //
-                                      },
-
                                     ),
 
                                     const SizedBox(
@@ -289,7 +190,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             },
                                           ),
                                           const Text(
-                                            'I agree to the terms and conditions',
+                                            'Remember me',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontFamily: 'SSFPro',
@@ -304,8 +205,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       height: 10,
                                     ),
                                     ButtonWidget(
-                                      title: isLoading ? "REGISTERING..." : "REGISTER",
-                                      onPressed: isLoading ? null : register,
+                                      title: isLoading ? "lOGINGG..." : "lOGINGG",
+                                      onPressed: isLoading ? null : login,
                                       showLoadingIndicator: isLoading,
                                     ),
                                     const SizedBox(
@@ -315,10 +216,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       alignment: Alignment.center,
                                       child: Row(
                                         mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        MainAxisAlignment.center,
                                         children: [
                                           const Text(
-                                            'Already have an account?',
+                                            'Don\'t have an account?',
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontFamily: 'SSFPro',
@@ -329,10 +230,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           TextButton(
                                             onPressed: () {
                                               // Navigate to login screen
-                                              Navigator.of(context).pushReplacementNamed(LoginScreen.routeName);
+                                              Navigator.of(context).pushReplacementNamed(RegisterScreen.routeName);
                                             },
                                             child: const Text(
-                                              'Login',
+                                              'Register Now',
                                               style: TextStyle(
                                                 fontSize: 16,
                                                 fontFamily: 'SSFPro',

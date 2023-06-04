@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../Repositeries/auth_repositeries.dart';
@@ -14,6 +15,31 @@ class AuthViewModel with ChangeNotifier {
   UserModel? _loggedInUser;
   UserModel? get loggedInUser => _loggedInUser;
 
+
+  Future<void> login(String email, String password) async {
+    try {
+      await AuthRepository().login(email, password);
+      var response = await AuthRepository().login(email, password);
+      if (kDebugMode) {
+        print(response);
+      }
+      _user = response.user;
+      if (kDebugMode) {
+        print("VM  $_user");
+      }
+      _loggedInUser = await AuthRepository().getUserDetail(_user!.uid);
+      if (kDebugMode) {
+        print("VM  $_loggedInUser");
+      }
+      notifyListeners();
+    } catch (err) {
+      if (kDebugMode) {
+        print(err);
+      }
+      // AuthRepository().logout();
+      rethrow;
+    }
+  }
 
   Future<void> register(UserModel user) async {
     try {

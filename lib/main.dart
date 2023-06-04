@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:tripdash/Screens/UserScreen/LoginScreen.dart';
 import 'package:tripdash/Screens/UserScreen/RegisterScreen.dart';
 import 'package:tripdash/Screens/UserScreen/TripPlan/trip_plan_detail.dart';
 import 'package:tripdash/Screens/UserScreen/TripPlan/trip_plan_overview.dart';
@@ -29,7 +30,7 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
 
         debugShowCheckedModeBanner: false,
-          initialRoute: AdminAddHotels.routeName,
+          initialRoute: LoginScreen.routeName,
           routes: routes,
 
       ),
